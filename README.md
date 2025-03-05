@@ -132,6 +132,7 @@ resource "aws_internet_gateway" "main_igw" {
 ```
 
 - *Route*
+
 Porém, mesmo tendo uma *VPC*, *subnet* e um *gateway*, nosso sistema não consegue ter acesso à internet. Para isso temos o *resource* que cria uma *route* (comando dentro do nosso *resource*) de nome "main_route_table" a partir do argumento *aws_route_table*. O comando *route* também possui um argumento para seu id chamado *gateway_id* com o comando "aws_internet_gateway.main_igw.id", conectando-se ao nosso *gateway* e também possui um CIDR block com todas as possibilidades de IP (definido pelo 0.0.0.0/0) Deste modo, nosso VPC tem acesso à internet pública.
 
 ```
