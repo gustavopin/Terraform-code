@@ -15,6 +15,13 @@ variable "candidato" {
   default     = "SeuNome"
 }
 
+#variável criada para guardar uma lista de IPs de acesso à infraestrutura
+variable "ips_members" {
+  description = "Lista de IPs que poderão acessar esta infraestrutura"
+  type        = list(string)
+  default     = ["exemplo/32"] # Outros IPs podem ser adicionados depois
+}
+
 resource "tls_private_key" "ec2_key" {
   algorithm = "RSA"
   rsa_bits  = 2048
@@ -69,40 +76,83 @@ resource "aws_route_table" "main_route_table" {
 resource "aws_route_table_association" "main_association" {
   subnet_id      = aws_subnet.main_subnet.id
   route_table_id = aws_route_table.main_route_table.id
-
-  tags = {
-    Name = "${var.projeto}-${var.candidato}-route_table_association"
-  }
 }
 
 resource "aws_security_group" "main_sg" {
   name        = "${var.projeto}-${var.candidato}-sg"
-  description = "Permitir SSH de qualquer lugar e todo o tráfego de saída"
+  description = "permitir a entrada e saída controlada"
   vpc_id      = aws_vpc.main_vpc.id
 
-  # Regras de entrada
+  #Regras de entrada
+  #SSH Ingress (Port 22)
   ingress {
-    description      = "Allow SSH from anywhere"
-    from_port        = 22
-    to_port          = 22
-    protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+    description = "Porta para administrador pela SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.ips_members
   }
 
-  # Regras de saída
+  #HTTP Ingress (Port 80)
+  ingress {
+    description = "Porta para HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.ips_members
+  }
+
+  #Regras de Saída
   egress {
-    description      = "Allow all outbound traffic"
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+    description = "Tráfego para HTTP"
+    from_port   = 80   
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "${var.projeto}-${var.candidato}-sg"
+  egress {
+    description = "Tráfego HTTPS"
+    from_port   = 443  # HTTPS
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
+
+  egress {
+    description = "DNS"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Porta de acesso para o NGINX"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.main_sg.id] #acesso apenas dentro do *main_sg*
+  }
+
+  egress {
+    description = "Tráfego para os servidos de update para o Debian"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["1.2.3.4/24"] #inserir o ip dos servidores de update do Debian
+  }
+
+  # Bloco para negar saída de qualquer outr IP por qualquer outro protocolo
+  egress {
+    description = "Block everything else"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = []
+  }
+
 }
 
 data "aws_ami" "debian12" {
@@ -136,10 +186,14 @@ resource "aws_instance" "debian_ec2" {
     delete_on_termination = true
   }
 
+  #atualização da instância Debian juntamente com a criação e execução 
   user_data = <<-EOF
               #!/bin/bash
               apt-get update -y
               apt-get upgrade -y
+              apt-get install nginx -y
+              systemctl enable nginx
+              systemctl start nginx
               EOF
 
   tags = {
