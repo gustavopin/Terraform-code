@@ -361,7 +361,7 @@ Deste modo, a infraestrutura agora possui uma *web server* mais responsivo e que
 
 Porém, isso cria um problema de segurança.
 
-### Modificações de Segurança
+### Modificações e Segurança
 
 Abrir as portas da VPC para todo HTTP não é um bom plano, porém, podemos modificar a infraestrutura para incluir novas regras de *ingress* dentro do *main_sg*:
 
@@ -454,6 +454,22 @@ Estes blocos novos de *egress* permitem ter controle específico dos IPs e de qu
 
 Os *cidr_block*s também podem ser configurados para algo específico caso seja necessário.
 
-#### Sugestão para seguranças
- - Criar um S3 bucket (storage do arquivo plan) com uma dynamodb table para não ter conflitos de atualizações durante uma mudança.
- - Ver VPC endpoints para maior segurança no SG
+Caso seja necessário conectar esse EC2 à outro servidor, ou adicioná-lo à um *load balancer* futuramente, o output abaixo foi adicionado:
+
+```
+output "security_group_id" {
+  description = "ID do security group (main_sg)"
+  value       = aws_security_group.main_sg.id
+}
+```
+
+Deste modo, conseguimos o ID do *main_sg* de modo mais fácil.
+
+### Instruções
+
+Comandos para aplicar a infraestrutura:
+
+  - *terraform init*: faz download de todos os *providers* e *plugins*;
+  - *terraform validate*: checa se o código está ok;
+  - *terraform plan*: mostra o que será criada ou modificado;
+  - *terraform apply*: aplica as mudanças e cria a infraestrutura (confirmar com "yes").

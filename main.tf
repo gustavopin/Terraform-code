@@ -211,3 +211,9 @@ output "ec2_public_ip" {
   description = "Endereço IP público da instância EC2"
   value       = aws_instance.debian_ec2.public_ip
 }
+
+#output para o ID do main_sg caso seja necessário conectar este EC2 à outro server
+output "security_group_id" {
+  description = "ID do security group (main_sg)"
+  value       = aws_security_group.main_sg.id
+}
