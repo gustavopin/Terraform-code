@@ -1,6 +1,6 @@
 # Documentação - Desafio VExpanses - Estágio DevOPS
 
-Este documento trás as tarefas a serem realizadas para o desafio proposto pela empresa VExpanses através do (documento provido)[https://drive.google.com/file/d/1otUEPPnify8i8nYS-h3vzSGJfk0u54IJ/view].
+Este documento trás as tarefas a serem realizadas para o desafio proposto pela empresa VExpanses através do [documento provido](https://drive.google.com/file/d/1otUEPPnify8i8nYS-h3vzSGJfk0u54IJ/view).
 
 ## Descrição do Arquivo Terraform Original
 
@@ -272,7 +272,7 @@ resource "aws_instance" "debian_ec2" {
 ```
 
   - *ami = data.aws_ami.debian12.id*: define a AMI que será usada para a instância de EC2, a partir do data source debian12 criado anteriormente;
-  - *instance_type = "t2.micro"*: estabelece o tipo de instância a ser utilizada, *t2.micro* nomeia a intância como sendo a "T2" do tipo "micro" (7 variações de nano à 2xlarge, micro é a segunda menor) que utiliza um processador escalável até 3.3GHz ((AWS)[https://aws.amazon.com/pt/ec2/instance-types/]);
+  - *instance_type = "t2.micro"*: estabelece o tipo de instância a ser utilizada, *t2.micro* nomeia a intância como sendo a "T2" do tipo "micro" (7 variações de nano à 2xlarge, micro é a segunda menor) que utiliza um processador escalável até 3.3GHz ([AWS](https://aws.amazon.com/pt/ec2/instance-types/));
   - *subnet_id = aws_subnet.main_subnet.id*: associa a EC2 à *subnet* (main_subnet) criada anteriormente na VPC;
   - *key_name = aws_key_pair.ec2_key_pair.key_name*: define as chaves para acesso ao EC2;
   - *security_groups = [aws_security_group.main_sg.name]*: engloba a instância EC2 ao *security group* criado anteriormente (*main_sg*);
