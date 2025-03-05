@@ -118,6 +118,7 @@ resource "aws_subnet" "main_subnet" {
 Por último, também são usadas as *tags* para a identificação e organização da subnet. Estas *tags* serão utilizadas à todo momento nos *resources* para organização.
 
 - *Gateway* (Internet Gateway/IGW)
+
 Este recurso possibilita a comunicação da VPC com a internet através do argumento *vpc_id = aws_vpc.main_vpc.id* (arguemnto que identifica a VPC dentro do main.tf). Este *gateway* é chamado de "main_igw" e é criado a partir do argumento *aws_internet_gateway*.
 
 ```
@@ -149,6 +150,7 @@ resource "aws_route_table" "main_route_table" {
 ```
 
 - *Table Association*
+
 *aws_route_table_association* é um comando que liga nossa subnet, criada anteriormente, com a route table usando os argumentos de *subnet_id* e *route_table_id* (ambos identificando os recursos previamente criados). Deste modo, nossoa *subnet* sabe que rota usar para o tráfego de informações.
 
 ```
@@ -166,6 +168,7 @@ resource "aws_route_table_association" "main_association" {
 >Tags não são permitidas em *table associations* e serão retiradas nas modificações do código
 
 - Segurança para o EC2
+
 Com o comando *aws_security_group* (nome *main_sg*) nosso código introduz um *Firewall* para o EC2, dando segurança às informações e decidindo o que/quem entra (regras definidos a partir do comando *ingress*) e o que/quem sai (regras definidas a partir do comando *egress*). Este comando acompanha um nome que usará os dados de nossas variáveis "projeto" e "candidato" juntamente com o sufixo "-sg" (*security group*) deste modo: VExpenses-SeuNome-sg, e uma conexão com nossa VPC pelo argumento *vpc_id*:
 
 ```
