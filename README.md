@@ -91,11 +91,13 @@ resource "aws_vpc" "main_vpc" {
 
 Neste bloco vemos 5 partes principais:
 
-    - A criação da VPC através do comando *aws_vpc*, que faz com que o Terraform use o provedor AWS para criar a VPC para o usuário de nome "aws_main";
-    - A definição do block CIDR usando um block de 16 bits (aproximadamente 65000 variações de ips, desde 10.0.0.0 até 10.0.255.255);
-    - Com o argumento *enable_dns_support* possibilitamos que o EC2 se comunique dentro da VPC usando nomes de domínios (Exemplo: servidorexemplo.ec2.internal) sem ele teríamos que usar diretamente os IPs gerados do bloco CIDR (Exemplo: 10.0.240.237). ALém disso, ;
-    - *enable_dns_hostnames* faz com que o provedor AWS use o IP público (criado com o IP particular que será usado apenas internamente) e dê um nome "DNS" para ele: ec2.ippublico.compute-1.amazonaws.com, de modo que: ec2 define que estamos usando um Elastic Compute Cloud (servidor na nuvem), o *ippublico* é definido também durante a criação dos ips dentro da VPC juntamente com o IP privado, *compute-1* se refere à região do data center usado (no caso deste código *us-east-1*) e *amazonaws.com* é o domínio da AWS.
-    - Por último, usamos nossas variáveis previamente estabelicidas como *tags* para nossa VPC, deixando ela mais organizada.
+  - A criação da VPC através do comando *aws_vpc*, que faz com que o Terraform use o provedor AWS para criar a VPC para o usuário de nome "aws_main";
+  - A definição do block CIDR usando um block de 16 bits (aproximadamente 65000 variações de ips, desde 10.0.0.0 até 10.0.255.255);
+  - Com o argumento *enable_dns_support* possibilitamos que o EC2 se comunique dentro da VPC usando nomes de domínios (Exemplo: servidorexemplo.ec2.internal) sem ele teríamos que usar diretamente os IPs gerados do bloco CIDR (Exemplo: 10.0.240.237). ALém disso, ;
+  - *enable_dns_hostnames* faz com que o provedor AWS use o IP público (criado com o IP particular que será usado apenas internamente) e dê um nome "DNS" para ele: ec2.ippublico.compute-1.amazonaws.com, de modo que: ec2 define que estamos usando um Elastic Compute Cloud (servidor na nuvem), o *ippublico* é definido também durante a criação dos ips dentro da VPC juntamente com o IP privado, *compute-1* se refere à região do data center usado (no caso deste código *us-east-1*) e *amazonaws.com* é o domínio da AWS.
+  - Por último, usamos nossas variáveis previamente estabelicidas como *tags* para nossa VPC, deixando ela mais organizada.
+
+Assim, pode-se seguir para a subnet.
 
 - Para a *subnet*:
 
