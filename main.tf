@@ -1,25 +1,25 @@
-#provedor a ser utilizado
+# Provider to be used
 provider "aws" {
   region = "us-east-1"
 }
 
 variable "projeto" {
-  description = "Nome do projeto"
+  description = "Project name"
   type        = string
-  default     = "VExpenses"
+  default     = "nome"
 }
 
 variable "candidato" {
-  description = "Nome do candidato"
+  description = "Candidate name"
   type        = string
   default     = "SeuNome"
 }
 
-#variável criada para guardar uma lista de IPs de acesso à infraestrutura
+# Variable created to store a list of IPs allowed to access the infrastructure
 variable "ips_members" {
-  description = "Lista de IPs que poderão acessar esta infraestrutura"
+  description = "List of IPs that can access this infrastructure"
   type        = list(string)
-  default     = ["exemplo/32"] # Outros IPs podem ser adicionados depois
+  default     = ["example/32"] # Other IPs can be added later
 }
 
 resource "tls_private_key" "ec2_key" {
@@ -80,31 +80,31 @@ resource "aws_route_table_association" "main_association" {
 
 resource "aws_security_group" "main_sg" {
   name        = "${var.projeto}-${var.candidato}-sg"
-  description = "permitir a entrada e saída controlada"
+  description = "Allow controlled ingress and egress"
   vpc_id      = aws_vpc.main_vpc.id
 
-  #Regras de entrada
-  #SSH Ingress (Port 22)
+  # Ingress rules
+  # SSH Ingress (Port 22)
   ingress {
-    description = "Porta para administrador pela SSH"
+    description = "Port for SSH administrator access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = var.ips_members
   }
 
-  #HTTP Ingress (Port 80)
+  # HTTP Ingress (Port 80)
   ingress {
-    description = "Porta para HTTP"
+    description = "Port for HTTP"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = var.ips_members
   }
 
-  #Regras de Saída
+  # Egress rules
   egress {
-    description = "Tráfego para HTTP"
+    description = "Traffic for HTTP"
     from_port   = 80   
     to_port     = 80
     protocol    = "tcp"
@@ -112,7 +112,7 @@ resource "aws_security_group" "main_sg" {
   }
 
   egress {
-    description = "Tráfego HTTPS"
+    description = "Traffic for HTTPS"
     from_port   = 443  # HTTPS
     to_port     = 443
     protocol    = "tcp"
@@ -128,23 +128,23 @@ resource "aws_security_group" "main_sg" {
   }
 
   egress {
-    description = "Porta de acesso para o NGINX"
+    description = "Access port for NGINX"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    security_groups = [aws_security_group.main_sg.id] #acesso apenas dentro do *main_sg*
+    security_groups = [aws_security_group.main_sg.id] # Access only within *main_sg*
   }
 
   egress {
-    description = "Tráfego para os servidos de update para o Debian"
+    description = "Traffic for Debian update servers"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["1.2.3.4/24"] #inserir o ip dos servidores de update do Debian
+    cidr_blocks = ["1.2.3.4/24"] # Insert the IP of Debian update servers
   }
 
-  # Bloco para negar saída de qualquer outr IP por qualquer outro protocolo
+  # Block to deny egress for any other IP or protocol
   egress {
     description = "Block everything else"
     from_port   = 0
@@ -186,7 +186,7 @@ resource "aws_instance" "debian_ec2" {
     delete_on_termination = true
   }
 
-  #atualização da instância Debian juntamente com a criação e execução 
+  # Update the Debian instance along with creation and execution
   user_data = <<-EOF
               #!/bin/bash
               apt-get update -y
@@ -202,18 +202,18 @@ resource "aws_instance" "debian_ec2" {
 }
 
 output "private_key" {
-  description = "Chave privada para acessar a instância EC2"
+  description = "Private key to access the EC2 instance"
   value       = tls_private_key.ec2_key.private_key_pem
   sensitive   = true
 }
 
 output "ec2_public_ip" {
-  description = "Endereço IP público da instância EC2"
+  description = "Public IP address of the EC2 instance"
   value       = aws_instance.debian_ec2.public_ip
 }
 
-#output para o ID do main_sg caso seja necessário conectar este EC2 à outro server
+# Output for the ID of main_sg in case it is necessary to connect this EC2 to another server
 output "security_group_id" {
-  description = "ID do security group (main_sg)"
+  description = "ID of the security group (main_sg)"
   value       = aws_security_group.main_sg.id
 }

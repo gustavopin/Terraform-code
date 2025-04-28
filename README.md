@@ -1,12 +1,12 @@
-# Documentação - Desafio VExpanses - Estágio DevOPS
+# Documentation
 
-Este documento trás as tarefas a serem realizadas para o desafio proposto pela empresa VExpanses através do [documento provido](https://drive.google.com/file/d/1otUEPPnify8i8nYS-h3vzSGJfk0u54IJ/view).
+This document provides functionalities for a Terraform code along with its explanation.
 
-## Descrição do Arquivo Terraform Original
+## Description of the Original Terraform File
 
 ### Provider
 
-O comando "provider" conecta o progama à AWS. O argumento **region = "us-east-1"** declara qual data center da AWS será usado, neste caso o padrão, localizado na costa leste estadunidense.
+The "provider" command connects the program to AWS. The **region = "us-east-1"** argument declares which AWS data center will be used, in this case, the default one located on the US East Coast.
 
 ```
 provider "aws" {
@@ -16,36 +16,36 @@ provider "aws" {
 
 ### Variable
 
-O comando *variable* declara as variáveis a serem usadas. Neste projeto seus nomes são "projeto" e "candidato".
+The *variable* command declares the variables to be used. In this project, their names are "projeto" and "candidato".
 
 ```
 variable "projeto" {
-  description = "Nome do projeto"
+  description = "Project name"
   type        = string
-  default     = "VExpenses"
+  default     = "nome"
 }
 
 variable "candidato" {
-  description = "Nome do candidato"
+  description = "Candidate name"
   type        = string
   default     = "SeuNome"
 }
 ```
 
-Dentro do bloco das variáveis existem 3 argumentos:
+Within the variable block, there are 3 arguments:
 
-  - *description*: é o propósito desta variável e o que é esperado nela;
-  - *type*: é o tipo de variável (string, number, bool, map, entre outros). Para ambas as variáveis declaradas no código, está sendo usado o tipo *string*, um tipo de variável de texto;
-  - *default*: utiliza este valor caso o usuário não digite nada ("VExpanses" para a variável "projeto" e "SeuNome" para a variável "candidato").
+  - *description*: the purpose of this variable and what is expected in it;
+  - *type*: the type of variable (string, number, bool, map, among others). For both variables declared in the code, the *string* type is used, a text variable type;
+  - *default*: uses this value if the user does not input anything ("VExpanses" for the "projeto" variable and "SeuNome" for the "candidato" variable).
 
 ### Resource
 
-Cada bloco de *resource* descreve uma (ou mais) infraestrutura. Como: compute instances, virtual networks, etc. O bloco de *resource* é composto, basicamente, de 4 argumentos fundamentais:
+Each *resource* block describes one (or more) infrastructure components, such as compute instances, virtual networks, etc. The *resource* block is basically composed of 4 fundamental arguments:
 
-  - A declaração de *resource*;
-  - O tipo de *resource* a ser usado;
-  - O nome deste *resource*;
-  - E entre as chaves {}, todos os argumentos a serem utilizados
+  - The declaration of *resource*;
+  - The type of *resource* to be used;
+  - The name of this *resource*;
+  - And within the braces {}, all the arguments to be used.
 
 ```
 resource "resource_type" "resource_name" {
@@ -53,7 +53,8 @@ resource "resource_type" "resource_name" {
     statement2 = "bits"
 }
 ```
-  - Chave para o EC2
+
+  - Key for EC2:
 
 ```
 resource "tls_private_key" "ec2_key" {
@@ -62,9 +63,9 @@ resource "tls_private_key" "ec2_key" {
 }
 ```
 
-No arquivo main.tf provido o primeiro resource está gerando uma chave de acesso criptografada de nome "ec2_key" usando o provedor TLS e o algoritmo RSA (um dos algoritmos de criptografia mais usados no mundo) e usa um tamanho de 2048 bits (descrito pela NITS como seguro até, pelo menos, 2030). Observando que: este bloco cria duas chaves, uma pública e uma privada, esta sendo de acesso exclusivo do usuário.
+In the provided main.tf file, the first resource generates an encrypted access key named "ec2_key" using the TLS provider and the RSA algorithm (one of the most widely used encryption algorithms in the world) with a size of 2048 bits (described by NITS as secure until at least 2030). Note that this block creates two keys, one public and one private, the latter being exclusively for user access.
 
- - Registro da chave para o EC2:
+ - Registering the key for EC2:
 
 ```
 resource "aws_key_pair" "ec2_key_pair" {
@@ -73,7 +74,7 @@ resource "aws_key_pair" "ec2_key_pair" {
 }
 ```
 
-Deste modo podemos criar a key pair dentro do EC2 da AWS chamado "ec2_key_pair". O argumento *key_name* faz com que este key pair tenha o nome referente às variáveis **projeto** e **candidato**. E o argumento *public_key* envia a chave para a AWS para que o EC2 reconheça a chave privada durante uma conexão.
+This way, we can create the key pair within AWS EC2 named "ec2_key_pair". The *key_name* argument ensures that this key pair has a name referring to the **projeto** and **candidato** variables. The *public_key* argument sends the key to AWS so that EC2 recognizes the private key during a connection.
 
 - VPC (Virtual Private Cloud):
 
@@ -89,19 +90,19 @@ resource "aws_vpc" "main_vpc" {
 }
 ```
 
-Neste bloco vemos 5 partes principais:
+In this block, we see 5 main parts:
 
-  - A criação da VPC através do comando *aws_vpc*, que faz com que o Terraform use o provedor AWS para criar a VPC para o usuário de nome "aws_main";
-  - A definição do block CIDR usando um block de 16 bits (aproximadamente 65000 variações de ips, desde 10.0.0.0 até 10.0.255.255);
-  - Com o argumento *enable_dns_support* possibilitamos que o EC2 se comunique dentro da VPC usando nomes de domínios (Exemplo: servidorexemplo.ec2.internal) sem ele teríamos que usar diretamente os IPs gerados do bloco CIDR (Exemplo: 10.0.240.237). ALém disso, ;
-  - *enable_dns_hostnames* faz com que o provedor AWS use o IP público (criado com o IP particular que será usado apenas internamente) e dê um nome "DNS" para ele: ec2.ippublico.compute-1.amazonaws.com, de modo que: ec2 define que estamos usando um Elastic Compute Cloud (servidor na nuvem), o *ippublico* é definido também durante a criação dos ips dentro da VPC juntamente com o IP privado, *compute-1* se refere à região do data center usado (no caso deste código *us-east-1*) e *amazonaws.com* é o domínio da AWS.
-  - Por último, usamos nossas variáveis previamente estabelicidas como *tags* para nossa VPC, deixando ela mais organizada.
+  - The creation of the VPC through the *aws_vpc* command, which makes Terraform use the AWS provider to create the VPC for the user named "aws_main";
+  - The definition of the CIDR block using a 16-bit block (approximately 65,000 IP variations, from 10.0.0.0 to 10.0.255.255);
+  - With the *enable_dns_support* argument, we enable EC2 to communicate within the VPC using domain names (e.g., servidorexemplo.ec2.internal). Without it, we would have to use the IPs generated from the CIDR block directly (e.g., 10.0.240.237);
+  - *enable_dns_hostnames* ensures that the AWS provider uses the public IP (created with the private IP that will only be used internally) and assigns it a "DNS" name: ec2.publicip.compute-1.amazonaws.com. Here, ec2 indicates that we are using an Elastic Compute Cloud (cloud server), *publicip* is also defined during the creation of the IPs within the VPC along with the private IP, *compute-1* refers to the region of the data center used (in this case, *us-east-1*), and *amazonaws.com* is AWS's domain;
+  - Finally, we use our previously established variables as *tags* for our VPC, making it more organized.
 
-Assim, pode-se seguir para a subnet.
+Thus, we can proceed to the subnet.
 
-- Para a *subnet*:
+- For the *subnet*:
 
-O próximo passo do código é gerar uma subnet, um segmento da VPC para melhorar a gestão dentro de um único IP. No código main.tf a subnet é criada com o argumento (dentro de um *resource*) chamada *aws_subnet* e dado o nome de "main_subnet". Para identificar a VPC para a criação da subnet, usa-se o argumento *vpc_id = aws_vpc.main_vpc.id*, identificando a "vpc_main". É também definido (como padrão, mas pode ser modificado) o *cidr_block* como 10.0.1.0/24 (um IP com 24 bits) e a zona de disponibilidade (AZ / *availability  zone*) dentro da região do Data Center de escolha, ou seja, o último carctere "a" em "us-east-1a" define uma zona mais específica na região.
+The next step in the code is to generate a subnet, a segment of the VPC to improve management within a single IP. In the main.tf code, the subnet is created with the argument (within a *resource*) called *aws_subnet* and given the name "main_subnet". To identify the VPC for the creation of the subnet, the *vpc_id = aws_vpc.main_vpc.id* argument is used, identifying the "vpc_main". The *cidr_block* is also defined (as default but can be modified) as 10.0.1.0/24 (a 24-bit IP), and the availability zone (AZ / *availability zone*) within the chosen data center region is specified. The last character "a" in "us-east-1a" defines a more specific zone within the region.
 
 ```
 resource "aws_subnet" "main_subnet" {
@@ -115,11 +116,11 @@ resource "aws_subnet" "main_subnet" {
 }
 ```
 
-Por último, também são usadas as *tags* para a identificação e organização da subnet. Estas *tags* serão utilizadas à todo momento nos *resources* para organização.
+Finally, *tags* are also used for the identification and organization of the subnet. These *tags* will be used throughout the *resources* for organization.
 
 - *Gateway* (Internet Gateway/IGW)
 
-Este recurso possibilita a comunicação da VPC com a internet através do argumento *vpc_id = aws_vpc.main_vpc.id* (arguemnto que identifica a VPC dentro do main.tf). Este *gateway* é chamado de "main_igw" e é criado a partir do argumento *aws_internet_gateway*.
+This resource enables the VPC to communicate with the internet through the argument *vpc_id = aws_vpc.main_vpc.id* (an argument that identifies the VPC within main.tf). This *gateway* is called "main_igw" and is created using the *aws_internet_gateway* argument.
 
 ```
 resource "aws_internet_gateway" "main_igw" {
@@ -133,7 +134,7 @@ resource "aws_internet_gateway" "main_igw" {
 
 - *Route*
 
-Porém, mesmo tendo uma *VPC*, *subnet* e um *gateway*, nosso sistema não consegue ter acesso à internet. Para isso temos o *resource* que cria uma *route* (comando dentro do nosso *resource*) de nome "main_route_table" a partir do argumento *aws_route_table*. O comando *route* também possui um argumento para seu id chamado *gateway_id* com o comando "aws_internet_gateway.main_igw.id", conectando-se ao nosso *gateway* e também possui um CIDR block com todas as possibilidades de IP (definido pelo 0.0.0.0/0) Deste modo, nosso VPC tem acesso à internet pública.
+However, even with a *VPC*, *subnet*, and a *gateway*, our system cannot access the internet. For this, we use the *resource* that creates a *route* (command within our *resource*) named "main_route_table" using the *aws_route_table* argument. The *route* command also has an argument for its ID called *gateway_id* with the command "aws_internet_gateway.main_igw.id", connecting to our *gateway* and also has a CIDR block with all possible IPs (defined by 0.0.0.0/0). This way, our VPC has access to the public internet.
 
 ```
 resource "aws_route_table" "main_route_table" {
@@ -152,7 +153,7 @@ resource "aws_route_table" "main_route_table" {
 
 - *Table Association*
 
-*aws_route_table_association* é um comando que liga nossa subnet, criada anteriormente, com a route table usando os argumentos de *subnet_id* e *route_table_id* (ambos identificando os recursos previamente criados). Deste modo, nossoa *subnet* sabe que rota usar para o tráfego de informações.
+*aws_route_table_association* is a command that links our previously created subnet with the route table using the arguments *subnet_id* and *route_table_id* (both identifying the previously created resources). This way, our *subnet* knows which route to use for traffic.
 
 ```
 resource "aws_route_table_association" "main_association" {
@@ -166,23 +167,23 @@ resource "aws_route_table_association" "main_association" {
 ```
 
 >[!IMPORTANT]
->Tags não são permitidas em *table associations* e serão retiradas nas modificações do código
+>Tags are not allowed in *table associations* and will be removed in code modifications.
 
-- Segurança para o EC2
+- Security for EC2
 
-Com o comando *aws_security_group* (nome *main_sg*) nosso código introduz um *Firewall* para o EC2, dando segurança às informações e decidindo o que/quem entra (regras definidos a partir do comando *ingress*) e o que/quem sai (regras definidas a partir do comando *egress*). Este comando acompanha um nome que usará os dados de nossas variáveis "projeto" e "candidato" juntamente com o sufixo "-sg" (*security group*) deste modo: VExpenses-SeuNome-sg, e uma conexão com nossa VPC pelo argumento *vpc_id*:
+Using the *aws_security_group* command (named *main_sg*), our code introduces a *Firewall* for the EC2, providing security for the information and deciding what/who can enter (rules defined using the *ingress* command) and what/who can exit (rules defined using the *egress* command). This command includes a name that will use the data from our variables "projeto" and "candidato" along with the suffix "-sg" (*security group*), like this: VExpenses-SeuNome-sg, and a connection to our VPC through the *vpc_id* argument:
 
 ```
 resource "aws_security_group" "main_sg" {
   name        = "${var.projeto}-${var.candidato}-sg"
-  description = "Permitir SSH de qualquer lugar e todo o tráfego de saída"
+  description = "Allow SSH from anywhere and all outbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
 ```
 
-Dentro do bloco de *security group* são definidas as permissões de entrada e saída:
+Within the *security group* block, the ingress and egress permissions are defined:
   - *Ingress*
 
-  Este comando é quem define o que/quem terá acesso ao nosso EC2, dado através do bloco de código:
+  This command defines what/who will have access to our EC2, provided through the code block:
 
   ```
   ingress {
@@ -195,11 +196,11 @@ Dentro do bloco de *security group* são definidas as permissões de entrada e s
   }
   ```
 
-  Aqui é definido, manualmente, quem terá o acesso ao EC2 pelos argumentos *from_port* e *to_port*, que, no nosso caso, são declarados como a porta 22 (acesso restrito à administradores pelo Security Shell (SSH)). O *protocol* define qual tipo de tráfego será usado para acesso (TCP é utilizado pela segurança). Por último são definidos os CIDR blocks de IPV4 ("0.0.0.0/0")  e IPV6 ("::/0").
+  Here, it is manually defined who will have access to the EC2 through the *from_port* and *to_port* arguments, which, in our case, are declared as port 22 (restricted access for administrators via Security Shell (SSH)). The *protocol* defines the type of traffic to be used for access (TCP is used for security). Finally, the CIDR blocks for IPV4 ("0.0.0.0/0") and IPV6 ("::/0") are defined.
 
   - *Egress*
 
-  O bloco *egress* controla o tráfego do EC2. No arquivo main.tf temos:
+  The *egress* block controls EC2 traffic. In the main.tf file, we have:
 
   ```
     egress {
@@ -212,11 +213,11 @@ Dentro do bloco de *security group* são definidas as permissões de entrada e s
   }
   ```
 
-  Neste código as regras de saída permitem que qualquer tráfego saia do EC2, os valores "0" para *from_port* e *to_port* permitem todos os tipos de tráfego (SSH, HTTP/HTTPS), juntamente com *protocol* sendo o valor "-1", permitindo todos os protocolos a serem usados (TCP, UDP, etc). Novamente, os CIDR blocks de IPV4 e IPV6 permitem qualquer IP nesta comunicação.
+  In this code, the outbound rules allow any traffic to leave the EC2. The values "0" for *from_port* and *to_port* allow all types of traffic (SSH, HTTP/HTTPS), along with *protocol* being set to "-1", allowing all protocols to be used (TCP, UDP, etc.). Again, the CIDR blocks for IPV4 and IPV6 allow any IP in this communication.
 
 - AMI (Amazon Machine Image)
 
-O bloco a seguir busca na AWS uma AMI em versão mais recente (*most_recent = true*) a partir de filtros (*filter{}*) estabelicidos:
+The following block searches AWS for the most recent AMI (*most_recent = true*) based on established filters (*filter{}*):
 
 ```
 data "aws_ami" "debian12" {
@@ -236,13 +237,13 @@ data "aws_ami" "debian12" {
 }
 ```
 
-O primeiro filtro procuro por AMIs que tenham o nome "debian-12-amd64-*", sendo que "*" ao final deste nome refere ao filtro: a AMI deve começar por "debian-12-amd64-" e a partir disso o último valor pode ser qualquer um. Exemplo: debian-12-amd64-20250305-1234. Nota-se que Debian 12 é uma distribuição do Linux, 12 sendo sua versão (Bookworm).
+The first filter looks for AMIs with the name "debian-12-amd64-*", where "*" at the end of this name acts as a wildcard: the AMI must start with "debian-12-amd64-" and the last value can be anything. Example: debian-12-amd64-20250305-1234. Note that Debian 12 is a Linux distribution, with 12 being its version (Bookworm).
 
-O segundo filtro define a virtualização como **HVM** (hardware virtualization), sendo mais atual e usando aceleração de hardware para melhor desempenho.
+The second filter defines the virtualization type as **HVM** (hardware virtualization), which is more modern and uses hardware acceleration for better performance.
 
-- Criação do EC2
+- EC2 Creation
 
-Este bloco define a criação da instância EC2 assi mcomo as configurações de disco:
+This block defines the creation of the EC2 instance as well as its disk configurations:
 
 ```
 resource "aws_instance" "debian_ec2" {
@@ -272,56 +273,56 @@ resource "aws_instance" "debian_ec2" {
 }
 ```
 
-  - *ami = data.aws_ami.debian12.id*: define a AMI que será usada para a instância de EC2, a partir do data source debian12 criado anteriormente;
-  - *instance_type = "t2.micro"*: estabelece o tipo de instância a ser utilizada, *t2.micro* nomeia a intância como sendo a "T2" do tipo "micro" (7 variações de nano à 2xlarge, micro é a segunda menor) que utiliza um processador escalável até 3.3GHz ([AWS](https://aws.amazon.com/pt/ec2/instance-types/));
-  - *subnet_id = aws_subnet.main_subnet.id*: associa a EC2 à *subnet* (main_subnet) criada anteriormente na VPC;
-  - *key_name = aws_key_pair.ec2_key_pair.key_name*: define as chaves para acesso ao EC2;
-  - *security_groups = [aws_security_group.main_sg.name]*: engloba a instância EC2 ao *security group* criado anteriormente (*main_sg*);
-  - *associate_public_ip_address = true*: garante um IP público à instância EC2.
+  - *ami = data.aws_ami.debian12.id*: defines the AMI to be used for the EC2 instance, based on the previously created debian12 data source;
+  - *instance_type = "t2.micro"*: specifies the type of instance to be used, *t2.micro* refers to the "T2" instance type with "micro" size (7 variations from nano to 2xlarge, micro is the second smallest) that uses a scalable processor up to 3.3GHz ([AWS](https://aws.amazon.com/ec2/instance-types/));
+  - *subnet_id = aws_subnet.main_subnet.id*: associates the EC2 instance with the *subnet* (main_subnet) created earlier in the VPC;
+  - *key_name = aws_key_pair.ec2_key_pair.key_name*: defines the keys for accessing the EC2 instance;
+  - *security_groups = [aws_security_group.main_sg.name]*: includes the EC2 instance in the previously created *security group* (*main_sg*);
+  - *associate_public_ip_address = true*: ensures a public IP is assigned to the EC2 instance.
 
-Para o *root_block {}* (disco):
+For the *root_block_device* (disk):
 
-  - *volume_size = 20*: define o volume do disco (em gigabytes);
-  - *volume_type = "gp2"*: estabelece o tipo do disco como "gp2" (SSD de uso geral);
-  - *delete_on_termination = true*: permite que esse volume gerado seja deletado quando a instância for **terminada**.
+  - *volume_size = 20*: sets the disk volume size (in gigabytes);
+  - *volume_type = "gp2"*: specifies the disk type as "gp2" (general-purpose SSD);
+  - *delete_on_termination = true*: allows the generated volume to be deleted when the instance is **terminated**.
 
-Bloco *user_data*
+*user_data* Block
 
-Executa um script de atualização da instância Debian
+Executes an update script for the Debian instance:
 
-  - *#!/bin/bash*: indica a inicilização do script no bash;
-  - *apt-get update -y*: busca atualizações para os pacotes necessários;
-  - *apt-get upgrade -y*: atualiza os pacotes.
-  - O argumento "EOF" indica o começo e fim de um script dentro do terraform.
+  - *#!/bin/bash*: indicates the start of the script in bash;
+  - *apt-get update -y*: fetches updates for necessary packages;
+  - *apt-get upgrade -y*: upgrades the packages.
+  - The "EOF" argument marks the beginning and end of a script within Terraform.
 
 ### *Outputs*
 
-Os *outputs* são blocos para mostrar informações da infraestrutura:
+The *outputs* are blocks to display information about the infrastructure:
 
 ```
 output "private_key" {
-  description = "Chave privada para acessar a instância EC2"
+  description = "Private key to access the EC2 instance"
   value       = tls_private_key.ec2_key.private_key_pem
   sensitive   = true
 }
 
 output "ec2_public_ip" {
-  description = "Endereço IP público da instância EC2"
+  description = "Public IP address of the EC2 instance"
   value       = aws_instance.debian_ec2.public_ip
 }
 ```
 
-No primeiro *output* (nomeado "private_key"):
+In the first *output* (named "private_key"):
 
-  - *value = tls_private_key.ec2_key.private_key_pem*: define o valor do *output*, neste caso a chave privada criada anteriormente pelo recurso *private_key*;
-  - *sensite = true*: marca este output como "sensível", ou seja, é uma informação que não pode vir à público e portanto não será exibida no terminal.
+  - *value = tls_private_key.ec2_key.private_key_pem*: defines the value of the *output*, in this case, the private key created earlier by the *private_key* resource;
+  - *sensitive = true*: marks this output as "sensitive," meaning it is information that should not be publicly displayed and therefore will not appear in the terminal.
 
-Para o segundo *output* ("ec2_public_ip"):
-  - *value = aws_instance.debian_ec2.public_ip*: define o valor do endereço IP público da instância debian_ec2 criada.
+For the second *output* ("ec2_public_ip"):
+  - *value = aws_instance.debian_ec2.public_ip*: defines the value as the public IP address of the created debian_ec2 instance.
 
 ### NGINX
 
-Para a instalação e execução do NGINX ápós a criação do EC2, executamos a seguinte função junto ao scrip bash de atualização de pacotes no subcomando *user_data* (comando interno no *resource "aws_instance"*):
+To install and run NGINX after creating the EC2 instance, the following function is executed along with the package update script in the *user_data* subcommand (internal command in the *resource "aws_instance"*):
 
 ```
   user_data = <<-EOF
@@ -338,19 +339,19 @@ Para a instalação e execução do NGINX ápós a criação do EC2, executamos 
   }
 ```
 
-Com isso:
-  - *apt-get install nginx -y*: instala o NGINX;
-  - *systemctl enable nginx*: habilita o funcionamento do NGINX;
-  - *systemctl start nginx*: inicia o NGINX.
+With this:
+  - *apt-get install nginx -y*: installs NGINX;
+  - *systemctl enable nginx*: enables NGINX to run;
+  - *systemctl start nginx*: starts NGINX.
 
-Deste modo, a infraestrutura agora possui uma *web server* mais responsivo e que pode servir como um *proxy* (ser uma barreira de entrada na comunicação com o EC2).
+This way, the infrastructure now includes a more responsive *web server* that can also serve as a *proxy* (acting as an entry barrier for communication with the EC2 instance).
 
 >[!IMPORTANT]
->Destaca-se que: para o uso do NGINX, as regras no comando de *ingress* sofrerão uma mudança: os argumentos para as portas serão modificados para o valor 80, vendo que a comunicação NGINX só ocorre através do HTTP. Como mostrado abaixo:
+>It is highlighted that: for the use of NGINX, the rules in the *ingress* command will undergo a change: the arguments for the ports will be modified to the value 80, as NGINX communication only occurs through HTTP. As shown below:
 
 ```
   ingress {
-    description      = "Permite HTTP de qualquer lugar"
+    description      = "Allows HTTP from anywhere"
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
@@ -359,16 +360,16 @@ Deste modo, a infraestrutura agora possui uma *web server* mais responsivo e que
   }
 ```
 
-Porém, isso cria um problema de segurança.
+However, this creates a security issue.
 
-### Modificações e Segurança
+### Modifications and Security
 
-Abrir as portas da VPC para todo HTTP não é um bom plano, porém, podemos modificar a infraestrutura para incluir novas regras de *ingress* dentro do *main_sg*:
+Opening the VPC ports for all HTTP traffic is not a good plan, but we can modify the infrastructure to include new *ingress* rules within *main_sg*:
 
 ```
   #SSH Ingress (Port 22)
   ingress {
-    description = "Porta para administrador pela SSH"
+    description = "Port for administrator via SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -377,7 +378,7 @@ Abrir as portas da VPC para todo HTTP não é um bom plano, porém, podemos modi
 
   #HTTP Ingress (Port 80)
   ingress {
-    description = "Porta para HTTP"
+    description = "Port for HTTP"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -385,22 +386,22 @@ Abrir as portas da VPC para todo HTTP não é um bom plano, porém, podemos modi
   }
 ```
 
-deste modo possuimos dois blocos de *ingress* que deixarão as portas 22 (SSH) e 80 (HTTP) serem usadas. Porém, apenas isso não deixaria a infraestrutura mais complexa, por isso adicionamos, dentro dos *cidr_blocks* uma variável chamada *ips_member*. Esta variável irá guardar IPs específicos de pessoas do time para que possam acessar a infraestrutura, deste modo, possibilitamos o co-working dentro do time. Esta variável é dada através do bloco (adicionado ao início do código):
+This way, we have two *ingress* blocks that will allow ports 22 (SSH) and 80 (HTTP) to be used. However, this alone would not make the infrastructure more complex, so we add, within the *cidr_blocks*, a variable called *ips_member*. This variable will store specific IPs of team members so they can access the infrastructure, thus enabling co-working within the team. This variable is defined through the block (added at the beginning of the code):
 
 ```
 variable "ips_members" {
-  description = "Lista de IPs que poderão acessar esta infraestrutura"
+  description = "List of IPs that can access this infrastructure"
   type        = list(string)
-  default     = ["exemplo/32"] # Outros IPs podem ser adicionados depois
+  default     = ["example/32"] # Other IPs can be added later
 }
 ```
 
-A mesma ideia pode ser aplicada ao *egress*, deixar com que qualquer protocolo e qualquer IP acesse esta zona não é seguro, pois é pelo *egress* que muitos ataques ocorrem, então pode-se aplicar a estrutura:
+The same idea can be applied to *egress*. Allowing any protocol and any IP to access this zone is not secure, as many attacks occur through *egress*. Therefore, the following structure can be applied:
 
 ```
-# Regras de Saída
+# Outbound Rules
 egress {
-  description = "Tráfego para HTTP"
+  description = "Traffic for HTTP"
   from_port   = 80   
   to_port     = 80
   protocol    = "tcp"
@@ -408,7 +409,7 @@ egress {
 }
 
 egress {
-  description = "Tráfego HTTPS"
+  description = "Traffic for HTTPS"
   from_port   = 443  # HTTPS
   to_port     = 443
   protocol    = "tcp"
@@ -424,23 +425,23 @@ egress {
 }
 
 egress {
-  description = "Porta de acesso para o NGINX"
+  description = "Access port for NGINX"
   from_port   = 80
   to_port     = 80
   protocol    = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
-  security_groups = [aws_security_group.main_sg.id] #acesso apenas dentro do *main_sg*
+  security_groups = [aws_security_group.main_sg.id] #access only within *main_sg*
 }
 
 egress {
-  description = "Tráfego para os servidos de update para o Debian"
+  description = "Traffic for Debian update servers"
   from_port   = 443
   to_port     = 443
   protocol    = "tcp"
-  cidr_blocks = ["1.2.3.4/24"] #inserir o ip dos servidores de update do Debian
+  cidr_blocks = ["1.2.3.4/24"] #insert the IP of Debian update servers
 }
 
-# Bloco para negar saída de qualquer outr IP por qualquer outro protocolo
+# Block to deny outbound traffic for any other IP or protocol
 egress {
   description = "Block everything else"
   from_port   = 0
@@ -450,26 +451,26 @@ egress {
 }
 ```
 
-Estes blocos novos de *egress* permitem ter controle específico dos IPs e de quem tem acesso ao EC2, desta forma, a estrutura se torna mais segura. É possível decidir qual bloco o usuário quer que seja útil, se por exemplo o DNS não for necessário, adicionar /* código */ ao bloco para marcá-lo como comentário ou excluí-lo totalmente.
+These new *egress* blocks allow specific control over IPs and who has access to the EC2 instance, making the structure more secure. It is possible to decide which block the user wants to be useful. For example, if DNS is not necessary, add /* code */ to the block to mark it as a comment or delete it entirely.
 
-Os *cidr_block*s também podem ser configurados para algo específico caso seja necessário.
+The *cidr_blocks* can also be configured for something specific if necessary.
 
-Caso seja necessário conectar esse EC2 à outro servidor, ou adicioná-lo à um *load balancer* futuramente, o output abaixo foi adicionado:
+If it is necessary to connect this EC2 instance to another server or add it to a *load balancer* in the future, the following output was added:
 
 ```
 output "security_group_id" {
-  description = "ID do security group (main_sg)"
+  description = "ID of the security group (main_sg)"
   value       = aws_security_group.main_sg.id
 }
 ```
 
-Deste modo, conseguimos o ID do *main_sg* de modo mais fácil.
+This way, we can retrieve the ID of *main_sg* more easily.
 
-### Instruções
+### Instructions
 
-Comandos para aplicar a infraestrutura:
+Commands to apply the infrastructure:
 
-  - *terraform init*: faz download de todos os *providers* e *plugins*;
-  - *terraform validate*: checa se o código está ok;
-  - *terraform plan*: mostra o que será criada ou modificado;
-  - *terraform apply*: aplica as mudanças e cria a infraestrutura (confirmar com "yes").
+  - *terraform init*: downloads all *providers* and *plugins*;
+  - *terraform validate*: checks if the code is valid;
+  - *terraform plan*: shows what will be created or modified;
+  - *terraform apply*: applies the changes and creates the infrastructure (confirm with "yes").
