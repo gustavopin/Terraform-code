@@ -36,7 +36,7 @@ Within the variable block, there are 3 arguments:
 
   - *description*: the purpose of this variable and what is expected in it;
   - *type*: the type of variable (string, number, bool, map, among others). For both variables declared in the code, the *string* type is used, a text variable type;
-  - *default*: uses this value if the user does not input anything ("VExpanses" for the "projeto" variable and "SeuNome" for the "candidato" variable).
+  - *default*: uses this value if the user does not input anything ("company" for the "projeto" variable and "SeuNome" for the "candidato" variable).
 
 ### Resource
 
@@ -171,7 +171,7 @@ resource "aws_route_table_association" "main_association" {
 
 - Security for EC2
 
-Using the *aws_security_group* command (named *main_sg*), our code introduces a *Firewall* for the EC2, providing security for the information and deciding what/who can enter (rules defined using the *ingress* command) and what/who can exit (rules defined using the *egress* command). This command includes a name that will use the data from our variables "projeto" and "candidato" along with the suffix "-sg" (*security group*), like this: VExpenses-SeuNome-sg, and a connection to our VPC through the *vpc_id* argument:
+Using the *aws_security_group* command (named *main_sg*), our code introduces a *Firewall* for the EC2, providing security for the information and deciding what/who can enter (rules defined using the *ingress* command) and what/who can exit (rules defined using the *egress* command). This command includes a name that will use the data from our variables "projeto" and "candidato" along with the suffix "-sg" (*security group*), like this: company-SeuNome-sg, and a connection to our VPC through the *vpc_id* argument:
 
 ```
 resource "aws_security_group" "main_sg" {
